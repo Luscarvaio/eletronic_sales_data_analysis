@@ -1,0 +1,11 @@
+[project]
+name = "etl-eletronic-sales"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.5.2",
+    "pandas>=3.0.2",
+    "requests>=2.33.1",
+]
