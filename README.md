@@ -4,6 +4,8 @@
 
 Este projeto tem como objetivo construir um fluxo completo de dados (ETL), desde a ingestão de um dataset bruto de vendas até a preparação de uma camada analítica para visualização em BI.
 
+Inicialmente desenvolvido em notebook para exploração, o projeto foi evoluído para scripts Python organizados em módulos (`extract`, `transform`), visando maior reprodutibilidade, organização e alinhamento com boas práticas de engenharia de dados.
+
 O pipeline inclui:
 
 * Extração de dados (CSV)
@@ -17,118 +19,172 @@ O pipeline inclui:
 ## 🎯 Objetivos do Projeto
 
 * Estruturar dados de vendas para análise de negócio
+* Aplicar boas práticas de transformação e tratamento de dados
 * Identificar padrões de vendas por:
-
   * Produto
   * Categoria e subcategoria
-  * Canal de vendas (online vs físico)
+  * Canal de vendas
   * Região
   * Representante comercial
-* Avaliar relação entre preço e volume de vendas
-* Preparar dataset otimizado para ferramentas de BI
+* Criar métricas relevantes para tomada de decisão
+* Preparar dataset para consumo em ferramentas de BI
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
 * Python (Pandas)
-* DuckDB
-* Tableau Public
+* DuckDB (em desenvolvimento)
+* Tableau Public (em desenvolvimento)
 * Git & GitHub
 
 ---
 
 ## 📂 Estrutura do Projeto
 
-```
 project/
+│
+├── src/
+│   ├── extract_data.py
+│   └── transform_data.py
 │
 ├── data/
 │   └── electronics_sales_raw.csv
 │
-├── notebook/
+├── notebooks/
 │   └── analysis.ipynb
 │
 ├── output/
 │   └── dataset_tratado.csv
 │
 └── README.md
-```
-
 ---
 
 ## 🔄 Pipeline de Dados
 
-### 1. Extração
+## 🔄 Pipeline de Dados
 
-* Leitura de dataset CSV contendo dados de vendas, clientes e métricas financeiras
+### 1. Extração (`extract`)
 
-### 2. Transformação
+A etapa de extração foi implementada em script Python, substituindo a leitura direta em notebook.
+
+Principais responsabilidades:
+
+* Leitura do dataset CSV bruto
+* Padronização inicial do carregamento
+* Retorno de um DataFrame reutilizável para o pipeline
+
+Essa abordagem permite maior reutilização, organização e manutenção do código.
+
+---
+
+### 2. Transformação (`transform`)
+
+A transformação foi estruturada em funções modulares, aproximando o projeto de um pipeline real de dados.
 
 Principais etapas:
 
-* Limpeza de dados (tratamento de strings, datas e valores nulos)
-* Conversão de tipos (ex: datas e valores numéricos)
-* Criação de colunas derivadas:
+#### ✔️ Limpeza e Conversão de Tipos
 
-  * Ano, mês e trimestre
-  * Métrica de receita (`revenue = quantity * unit_price`)
-* Padronização de dimensões:
+* Conversão de colunas numéricas (`unit_price`, `quantity`, etc.)
+* Tratamento de inconsistências (ex: separadores, valores inválidos)
 
-  * Canal de vendas
-  * Região
-  * Representante
-* Agregações para análise
+#### ✔️ Tratamento de Datas
+
+* Conversão para datetime
+* Tratamento de erros (`errors='coerce'`)
+
+#### ✔️ Feature Engineering
+
+* Criação da métrica de receita:
+
+revenue = quantity * unit_price
+
+
+* Criação de colunas temporais:
+* Ano
+* Mês
+* Trimestre
+
+#### ✔️ Padronização
+
+* Normalização de dimensões (canal, região, vendedor)
+* Organização dos dados para consumo analítico
 
 ---
 
 ### 3. Modelagem Analítica
 
-Criação de dataset consolidado com métricas como:
+Criação de um dataset consolidado com métricas como:
 
 * Total de pedidos
-* Total de unidades vendidas
+* Quantidade vendida
 * Receita total
 * Preço médio
 
-Este dataset será utilizado como base para visualização no Tableau.
+Este dataset serve como base para análises e dashboards.
 
 ---
 
 ### 4. Load (em desenvolvimento)
 
-Os dados transformados serão carregados em um banco analítico utilizando DuckDB para:
+Os dados transformados serão carregados em um banco analítico utilizando DuckDB, permitindo:
 
-* Melhor performance em consultas
-* Simulação de ambiente de dados real
+* Execução de queries SQL
+* Melhor performance analítica
+* Simulação de ambiente real de dados
 
 ---
 
-### 5. Visualização (em desenvolvimento)
+### 5. Análise e Visualização (em desenvolvimento)
 
-Os dados serão conectados ao Tableau Public para criação de dashboards interativos, incluindo:
+A análise será dividida em duas camadas:
 
-* Vendas por canal
+* **Jupyter Notebook** → exploração e geração de insights
+* **Tableau Public** → construção de dashboards interativos
+
+Principais análises previstas:
+
+* Receita por canal
 * Performance por vendedor
 * Receita por categoria
-* Análise de preço vs volume
+* Relação entre preço e volume
+
+---
+
+## 🔁 Evolução do Projeto
+
+O projeto passou por duas fases principais:
+
+### Fase 1 — Exploração
+
+* Uso de notebook para análise inicial
+* Testes de transformação
+
+### Fase 2 — Estruturação
+
+* Migração para scripts Python
+* Separação em módulos (`extract` e `transform`)
+* Aplicação de boas práticas de engenharia de dados
+
+Essa evolução reflete a transição de um ambiente exploratório para um pipeline mais próximo de produção.
 
 ---
 
 ## 📈 Principais Métricas
 
-* Total de pedidos
-* Receita total
+* Receita total (`Revenue`)
 * Quantidade vendida
 * Preço médio
-* Distribuição por canal e região
+* Total de pedidos
+* Dimensões temporais (ano, mês, trimestre)
 
 ---
 
 ## 🚧 Status do Projeto
 
 * [x] Extração de dados
-* [x] Limpeza inicial
+* [x] Limpeza e transformação
 * [x] Feature engineering
 * [ ] Criação de métricas avançadas (em andamento)
 * [ ] Load em DuckDB
@@ -138,21 +194,23 @@ Os dados serão conectados ao Tableau Public para criação de dashboards intera
 
 ## 📌 Próximos Passos
 
+* Implementar etapa de Load com DuckDB
+* Criar camada analítica consolidada
 * Refinar métricas de negócio (ex: ticket médio)
-* Implementar carga no DuckDB
-* Criar dashboards no Tableau Public
+* Desenvolver dashboards no Tableau Public
+* Gerar insights de negócio a partir dos dados
 * Adicionar análises mais avançadas (ex: comportamento de clientes e churn)
 
 ---
 
 ## 💡 Aprendizados
 
-Este projeto foca no desenvolvimento de habilidades práticas em:
-
-* Manipulação e transformação de dados
-* Modelagem para análise
-* Construção de pipelines de dados
-* Preparação de dados para BI
+* Estruturação de pipelines ETL
+* Modularização de código em Python
+* Tratamento e transformação de dados com Pandas
+* Modelagem de dados para análise
+* Diferença entre análise exploratória e código produtivo
+* Preparação de dados para ferramentas de BI
 
 ---
 
