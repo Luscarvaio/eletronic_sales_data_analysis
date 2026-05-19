@@ -1,8 +1,5 @@
-from extract_data import extract_data
 import pandas as pd 
-from pathlib import Path 
 
-df = extract_data('electronics_sales_raw.csv')
 columns_to_convert_float = ['unit_price', 'quantity', 'monthly_burn', 'debt_balance', 'cash_balance']
 date_columns = ['order_date', 'first_purchase_date', 'last_purchase_date']
 
@@ -50,7 +47,7 @@ def create_month_year_quarter_columns(df, date_columns):
         df[f'{col}_year'] = df[col].dt.year
         df[f'{col}_quarter'] = df[col].dt.quarter
 
-        return df
+    return df
 
 def data_transformation(df):
     df = convert_to_float(df, columns_to_convert_float)
@@ -59,9 +56,6 @@ def data_transformation(df):
     df = create_month_year_quarter_columns(df, date_columns)
     return df
 
-df = data_transformation(df)
-print(df.info())
-print(df['order_date_month_name'].head())
 
 
 
