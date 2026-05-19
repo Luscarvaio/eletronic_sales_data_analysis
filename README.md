@@ -62,8 +62,6 @@ project/
 
 ## 🔄 Pipeline de Dados
 
-## 🔄 Pipeline de Dados
-
 ### 1. Extração (`extract`)
 
 A etapa de extração foi implementada em script Python, substituindo a leitura direta em notebook.
@@ -186,8 +184,8 @@ Essa evolução reflete a transição de um ambiente exploratório para um pipel
 * [x] Extração de dados
 * [x] Limpeza e transformação
 * [x] Feature engineering
+* [x] Load em DuckDB
 * [ ] Criação de métricas avançadas (em andamento)
-* [ ] Load em DuckDB
 * [ ] Dashboard no Tableau
 
 ---
