@@ -1,219 +1,295 @@
-# 📊 Sales Data Pipeline & Analysis
+# Camada de Transform
 
-## 📌 Overview
+A camada de **Transform** é responsável por limpar, padronizar, enriquecer e preparar os dados para análise.  
+Essa etapa representa o núcleo do pipeline ETL, onde os dados brutos passam por regras de negócio e tratamento de inconsistências.
 
-Este projeto tem como objetivo construir um fluxo completo de dados (ETL), desde a ingestão de um dataset bruto de vendas até a preparação de uma camada analítica para visualização em BI.
+O fluxo atual segue:
 
-Inicialmente desenvolvido em notebook para exploração, o projeto foi evoluído para scripts Python organizados em módulos (`extract`, `transform`), visando maior reprodutibilidade, organização e alinhamento com boas práticas de engenharia de dados.
-
-O pipeline inclui:
-
-* Extração de dados (CSV)
-* Transformação e limpeza com Python (Pandas)
-* Criação de métricas de negócio
-* Carregamento em banco analítico (DuckDB)
-* Visualização final no Tableau Public
-
----
-
-## 🎯 Objetivos do Projeto
-
-* Estruturar dados de vendas para análise de negócio
-* Aplicar boas práticas de transformação e tratamento de dados
-* Identificar padrões de vendas por:
-  * Produto
-  * Categoria e subcategoria
-  * Canal de vendas
-  * Região
-  * Representante comercial
-* Criar métricas relevantes para tomada de decisão
-* Preparar dataset para consumo em ferramentas de BI
+```text
+Extract
+↓
+Transform
+↓
+Load
+```
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+# Objetivo
 
-* Python (Pandas)
-* DuckDB (em desenvolvimento)
-* Tableau Public (em desenvolvimento)
-* Git & GitHub
+A etapa de Transform tem como finalidade:
 
----
-
-## 📂 Estrutura do Projeto
-
-project/
-│
-├── src/
-│   ├── extract_data.py
-│   └── transform_data.py
-│
-├── data/
-│   └── electronics_sales_raw.csv
-│
-├── notebooks/
-│   └── analysis.ipynb
-│
-├── output/
-│   └── dataset_tratado.csv
-│
-└── README.md
----
-
-## 🔄 Pipeline de Dados
-
-## 🔄 Pipeline de Dados
-
-### 1. Extração (`extract`)
-
-A etapa de extração foi implementada em script Python, substituindo a leitura direta em notebook.
-
-Principais responsabilidades:
-
-* Leitura do dataset CSV bruto
-* Padronização inicial do carregamento
-* Retorno de um DataFrame reutilizável para o pipeline
-
-Essa abordagem permite maior reutilização, organização e manutenção do código.
+- Corrigir inconsistências nos dados
+- Padronizar tipos de dados
+- Criar métricas derivadas
+- Preparar colunas temporais para análise
+- Garantir maior qualidade dos dados
+- Tornar o dataset pronto para SQL e ferramentas analíticas
 
 ---
 
-### 2. Transformação (`transform`)
+# Principais Transformações
 
-A transformação foi estruturada em funções modulares, aproximando o projeto de um pipeline real de dados.
+## 1. Conversão de Valores Numéricos
 
-Principais etapas:
+Função:
 
-#### ✔️ Limpeza e Conversão de Tipos
+```python
+convert_to_float()
+```
 
-* Conversão de colunas numéricas (`unit_price`, `quantity`, etc.)
-* Tratamento de inconsistências (ex: separadores, valores inválidos)
+### Objetivo
 
-#### ✔️ Tratamento de Datas
+Converter colunas numéricas que chegam como texto para formato numérico adequado.
 
-* Conversão para datetime
-* Tratamento de erros (`errors='coerce'`)
+### Tratamentos realizados
 
-#### ✔️ Feature Engineering
+- Conversão para string
+- Remoção de separadores inválidos
+- Conversão para valores numéricos
+- Tratamento de erros com `errors='coerce'`
 
-* Criação da métrica de receita:
+### Exemplo
 
-revenue = quantity * unit_price
+Antes:
 
+```text
+"1,200"
+```
 
-* Criação de colunas temporais:
-* Ano
-* Mês
-* Trimestre
+Depois:
 
-#### ✔️ Padronização
-
-* Normalização de dimensões (canal, região, vendedor)
-* Organização dos dados para consumo analítico
-
----
-
-### 3. Modelagem Analítica
-
-Criação de um dataset consolidado com métricas como:
-
-* Total de pedidos
-* Quantidade vendida
-* Receita total
-* Preço médio
-
-Este dataset serve como base para análises e dashboards.
+```text
+1200.0
+```
 
 ---
 
-### 4. Load (em desenvolvimento)
+# Colunas Numéricas Tratadas
 
-Os dados transformados serão carregados em um banco analítico utilizando DuckDB, permitindo:
-
-* Execução de queries SQL
-* Melhor performance analítica
-* Simulação de ambiente real de dados
-
----
-
-### 5. Análise e Visualização (em desenvolvimento)
-
-A análise será dividida em duas camadas:
-
-* **Jupyter Notebook** → exploração e geração de insights
-* **Tableau Public** → construção de dashboards interativos
-
-Principais análises previstas:
-
-* Receita por canal
-* Performance por vendedor
-* Receita por categoria
-* Relação entre preço e volume
+```python
+columns_to_convert_float = [
+    'unit_price',
+    'quantity',
+    'monthly_burn',
+    'debt_balance',
+    'cash_balance'
+]
+```
 
 ---
 
-## 🔁 Evolução do Projeto
+# 2. Criação da Coluna Revenue
 
-O projeto passou por duas fases principais:
+Função:
 
-### Fase 1 — Exploração
+```python
+create_revenue_column()
+```
 
-* Uso de notebook para análise inicial
-* Testes de transformação
+### Objetivo
 
-### Fase 2 — Estruturação
+Criar uma métrica de faturamento baseada no preço unitário e quantidade.
 
-* Migração para scripts Python
-* Separação em módulos (`extract` e `transform`)
-* Aplicação de boas práticas de engenharia de dados
+### Regra aplicada
 
-Essa evolução reflete a transição de um ambiente exploratório para um pipeline mais próximo de produção.
+```text
+Revenue = unit_price × quantity
+```
 
----
+### Comportamento
 
-## 📈 Principais Métricas
+- Valida se a coluna de preço existe
+- Verifica se a coluna de quantidade foi informada
+- Calcula faturamento automaticamente
 
-* Receita total (`Revenue`)
-* Quantidade vendida
-* Preço médio
-* Total de pedidos
-* Dimensões temporais (ano, mês, trimestre)
+### Exemplo
 
----
-
-## 🚧 Status do Projeto
-
-* [x] Extração de dados
-* [x] Limpeza e transformação
-* [x] Feature engineering
-* [ ] Criação de métricas avançadas (em andamento)
-* [ ] Load em DuckDB
-* [ ] Dashboard no Tableau
+| unit_price | quantity | Revenue |
+|---|---|---|
+| 100 | 2 | 200 |
 
 ---
 
-## 📌 Próximos Passos
+# 3. Conversão de Datas
 
-* Implementar etapa de Load com DuckDB
-* Criar camada analítica consolidada
-* Refinar métricas de negócio (ex: ticket médio)
-* Desenvolver dashboards no Tableau Public
-* Gerar insights de negócio a partir dos dados
-* Adicionar análises mais avançadas (ex: comportamento de clientes e churn)
+Função:
+
+```python
+convert_to_datetime()
+```
+
+### Objetivo
+
+Padronizar colunas temporais para o formato datetime do pandas.
+
+### Tratamentos realizados
+
+- Conversão para datetime
+- Tratamento de valores inválidos
+- Coerção de erros com `errors='coerce'`
+
+### Colunas Tratadas
+
+```python
+date_columns = [
+    'order_date',
+    'first_purchase_date',
+    'last_purchase_date'
+]
+```
 
 ---
 
-## 💡 Aprendizados
+# 4. Criação de Colunas Temporais
 
-* Estruturação de pipelines ETL
-* Modularização de código em Python
-* Tratamento e transformação de dados com Pandas
-* Modelagem de dados para análise
-* Diferença entre análise exploratória e código produtivo
-* Preparação de dados para ferramentas de BI
+Função:
+
+```python
+create_month_year_quarter_columns()
+```
+
+### Objetivo
+
+Criar colunas auxiliares para análises temporais.
+
+### Colunas criadas automaticamente
+
+Para cada coluna de data:
+
+- Mês numérico
+- Nome do mês
+- Ano
+- Trimestre
+
+### Exemplo
+
+Para:
+
+```text
+order_date
+```
+
+São geradas:
+
+```text
+order_date_month
+order_date_month_name
+order_date_year
+order_date_quarter
+```
 
 ---
 
-## 📬 Contato
+# Fluxo da Camada de Transform
 
-Sinta-se à vontade para contribuir ou sugerir melhorias.
+```text
+DataFrame bruto
+↓
+Conversão de valores numéricos
+↓
+Criação da coluna Revenue
+↓
+Conversão de datas
+↓
+Criação de colunas temporais
+↓
+DataFrame analítico tratado
+```
+
+---
+
+# Estrutura Atual
+
+```text
+src/
+└── transform_data.py
+```
+
+---
+
+# Função Principal
+
+A função principal da camada de transformação é:
+
+```python
+data_transformation()
+```
+
+Ela centraliza todas as etapas de limpeza e enriquecimento do dataset.
+
+### Fluxo interno
+
+```python
+convert_to_float()
+↓
+create_revenue_column()
+↓
+convert_to_datetime()
+↓
+create_month_year_quarter_columns()
+```
+
+---
+
+# Tratamento de Erros
+
+O pipeline utiliza validações para evitar falhas silenciosas.
+
+Exemplos:
+
+- Verificação de existência de colunas
+- Validação de colunas temporais
+- Tratamento de conversões inválidas
+- Uso de `ValueError` para erros críticos
+
+---
+
+# Objetivo Analítico
+
+Após a transformação, o dataset fica preparado para:
+
+- Queries SQL
+- Dashboards
+- KPIs
+- Análises temporais
+- Análise de faturamento
+- Segmentações de negócio
+- Integração com Tableau
+- Estudos exploratórios em notebooks
+
+---
+
+# Melhorias Futuras
+
+Possíveis evoluções da camada de Transform:
+
+- Padronização de schema
+- Logging estruturado
+- Tratamento de valores ausentes
+- Validação de tipos
+- Criação de métricas adicionais
+- Pipeline incremental
+- Testes automatizados
+- Configuração via arquivo `.env`
+- Uso de classes para organização do pipeline
+
+---
+
+# Execução
+
+A transformação é executada automaticamente no pipeline principal:
+
+```bash
+python main.py
+```
+
+Fluxo completo:
+
+```text
+Extract
+↓
+Transform
+↓
+Load
+```
