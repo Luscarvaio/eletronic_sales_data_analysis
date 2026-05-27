@@ -40,6 +40,17 @@ def load_to_duckdb(
 
     conn = duckdb.connect(str(db_path))
 
+    conn.register('temp_df', df) 
+
+    conn.execute(f"""
+    CREATE OR REPLACE TABLE {table_name} AS
+    SELECT *
+    FROM temp_df
+    """)
+    conn.close()
+
+    print(f'DuckDB table "{table_name}" created successfully in database: {db_path}')
+
 def load_data(df):
 
     load_to_csv(df)
