@@ -28,3 +28,7 @@ wheels/
 # OS
 Thumbs.db
 .DS_Store
+
+# DuckDB
+.wal
+.duckdb
