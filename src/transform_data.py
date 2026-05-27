@@ -1,8 +1,5 @@
-from extract_data import extract_data
 import pandas as pd 
-from pathlib import Path 
 
-df = extract_data('electronics_sales_raw.csv')
 columns_to_convert_float = ['unit_price', 'quantity', 'monthly_burn', 'debt_balance', 'cash_balance']
 date_columns = ['order_date', 'first_purchase_date', 'last_purchase_date']
 
@@ -16,14 +13,51 @@ def convert_to_float(df, columns):
             df[col] = pd.to_numeric(df[col], errors='coerce')
     return df
 
-def create_revenue_column(df, price_col, quantity_col=None):
+def create_gross_revenue_column(df, price_col, quantity_col=None):
     if price_col not in df.columns:
         raise ValueError(f'Price column "{price_col}" does not exist in the DataFrame.')
     
     if quantity_col and quantity_col in df.columns:
-        df['Revenue'] = df[price_col] * df[quantity_col]
+        df['gross_revenue'] = df[price_col] * df[quantity_col]
     else:
-        df['Revenue'] = df[price_col]
+        df['gross_revenue'] = df[price_col]
+    return df
+
+def create_net_revenue(df):
+
+    required_columns = ['gross_revenue', 'discount_pct']
+
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f'Column "{col}" is required to calculate Net Revenue but is missing from the DataFrame.')
+        
+        df['net_revenue'] = df['gross_revenue'] * (1 - df['discount_pct'])
+
+    return df
+
+def create_gross_profit(df):
+    cost_rules = {
+        'Smartphones': 0.6,
+        'Laptops': 0.4,
+        'Audio': 0.5,
+        'Peripherals': 0.3,
+        'Tablets': 0.5
+    }
+
+    df['cogs_pct'] = df['sub_category'].map(cost_rules)
+    df['cost_of_goods_sold'] = df['net_revenue'] * df['cogs_pct']
+    df['gross_profit'] = df['net_revenue'] - df['cost_of_goods_sold']
+    
+    df.drop(columns=['cogs_pct'], inplace=True)
+    
+    return df
+
+def create_operational_profit(df):
+    required_columns = ['gross_profit', 'monthly_burn']
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f'Column "{col}" is required to calculate Operational Profit but is missing from the DataFrame.')
+    df['operational_profit'] = df['gross_profit'] - df['monthly_burn']
     return df
 
 def convert_to_datetime(df, columns):
@@ -50,18 +84,18 @@ def create_month_year_quarter_columns(df, date_columns):
         df[f'{col}_year'] = df[col].dt.year
         df[f'{col}_quarter'] = df[col].dt.quarter
 
-        return df
+    return df
 
 def data_transformation(df):
     df = convert_to_float(df, columns_to_convert_float)
-    df = create_revenue_column(df, 'unit_price', 'quantity')
+    df = create_gross_revenue_column(df, 'unit_price', 'quantity')
+    df = create_net_revenue(df)
+    df = create_gross_profit(df)
+    df = create_operational_profit(df)
     df = convert_to_datetime(df, date_columns)
     df = create_month_year_quarter_columns(df, date_columns)
     return df
 
-df = data_transformation(df)
-print(df.info())
-print(df['order_date_month_name'].head())
 
 
 

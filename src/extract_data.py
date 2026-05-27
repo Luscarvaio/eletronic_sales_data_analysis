@@ -9,8 +9,3 @@ def extract_data(file_name):
         raise FileNotFoundError(f'This file does not exist: {file_path}')
 
     return pd.read_csv(file_path)
-
-df = extract_data('electronics_sales_raw.csv')
-print(df.head())
-
-print(df.info())
