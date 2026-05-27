@@ -1,139 +1,70 @@
-````markdown
-# Camada Analítica e Views SQL
+# Electronic Sales ETL & Analytics Pipeline
 
-Após a construção das etapas de Extract, Transform e Load, o projeto passou a incluir uma camada analítica baseada em SQL utilizando DuckDB.
+Projeto de Engenharia de Dados e Analytics desenvolvido com foco em construção de pipelines ETL, modelagem analítica, métricas de negócio e visualização de dados utilizando Python, DuckDB, SQL e Tableau.
 
-Essa etapa tem como objetivo transformar os dados já tratados em métricas de negócio reutilizáveis para análises, dashboards e exploração analítica.
+O projeto simula um fluxo moderno de análise de dados, desde a ingestão de arquivos CSV até a criação de métricas analíticas e dashboards.
 
-Fluxo atual do projeto:
+---
+
+# Objetivo do Projeto
+
+O principal objetivo deste projeto é construir um pipeline ETL completo para:
+
+- Extrair dados de vendas eletrônicas
+- Limpar e transformar os dados
+- Persistir os dados em um Data Warehouse local
+- Criar métricas de negócio
+- Construir análises SQL reutilizáveis
+- Preparar dados para visualização analítica
+- Simular workflows reais de engenharia de dados e analytics engineering
+
+---
+
+# Arquitetura do Projeto
 
 ```text
-CSV bruto
+CSV Raw Data
 ↓
-ETL Python
+Extract Layer
+↓
+Transform Layer
+↓
+Load Layer
 ↓
 DuckDB Warehouse
 ↓
-Views SQL Analíticas
+SQL Analytical Views
 ↓
-Notebook / Tableau
+Notebook Analysis
+↓
+Tableau Dashboards
 ```
 
 ---
 
-# Objetivo
+# Tecnologias Utilizadas
 
-A camada analítica foi criada para:
+## Linguagens e Ferramentas
 
-- Centralizar métricas de negócio
-- Evitar duplicação de lógica no Tableau
-- Facilitar análises exploratórias
-- Criar uma camada semântica reutilizável
-- Melhorar organização do projeto analítico
-- Simular workflows reais de analytics engineering
+- Python
+- SQL
+- DuckDB
+- pandas
+- Jupyter Notebook
+- Tableau Public
+- Git & GitHub
 
 ---
 
-# Arquitetura Analítica
-
-## Tabela Base
+# Estrutura do Projeto
 
 ```text
-sales
-```
-
-Tabela criada pelo pipeline ETL contendo:
-
-- Dados tratados
-- Colunas temporais
-- Métricas financeiras
-- KPIs derivados
-
----
-
-# Views Criadas
-
-## 1. `top_categories`
-
-View responsável por identificar categorias com melhor desempenho financeiro.
-
-### Métricas calculadas
-
-- Receita total por categoria
-- Lucro bruto total por categoria
-
-### Query
-
-```sql
-CREATE OR REPLACE VIEW top_categories AS
-
-SELECT
-    category,
-    SUM(net_revenue) AS total_revenue,
-    SUM(gross_profit) AS total_gross_profit
-FROM sales
-GROUP BY category
-```
-
----
-
-# Objetivo Analítico
-
-Essa view permite:
-
-- Identificar categorias mais lucrativas
-- Comparar desempenho entre categorias
-- Criar rankings financeiros
-- Analisar concentração de receita
-
----
-
-## 2. `revenue_seasonality`
-
-View responsável pela análise temporal e sazonalidade de receita.
-
-### Métrica calculada
-
-- Receita total por período
-
-### Query
-
-```sql
-CREATE OR REPLACE VIEW revenue_seasonality AS
-
-SELECT
-    order_date_year,
-    order_date_month,
-    order_date_month_name,
-    SUM(net_revenue) AS total_revenue
-FROM sales
-GROUP BY
-    order_date_year,
-    order_date_month,
-    order_date_month_name
-```
-
----
-
-# Objetivo Analítico
-
-Essa view permite:
-
-- Identificar sazonalidade
-- Detectar picos e quedas de receita
-- Comparar desempenho mensal
-- Construir análises temporais no Tableau
-
----
-
-# Estrutura Atual
-
-```text
-project/
+etl_eletronic_sales/
 │
 ├── data/
+│   ├── raw/
+│   ├── processed/
 │   └── warehouse/
-│       └── electronics_sales.duckdb
 │
 ├── notebooks/
 │   └── eletronic_sales.ipynb
@@ -143,75 +74,275 @@ project/
 │   ├── transform_data.py
 │   └── load_data.py
 │
-└── main.py
+├── main.py
+│
+└── README.md
 ```
 
 ---
 
-# Fluxo de Desenvolvimento Analítico
+# Pipeline ETL
 
-O fluxo utilizado no projeto segue:
+## 1. Extract Layer
+
+Responsável pela extração dos dados brutos.
+
+### Funcionalidades
+
+- Leitura de arquivos CSV
+- Construção dinâmica de paths utilizando `pathlib`
+- Padronização de entrada de dados
+
+---
+
+## 2. Transform Layer
+
+Responsável pelo tratamento e enriquecimento dos dados.
+
+### Transformações realizadas
+
+- Conversão de colunas numéricas
+- Conversão de colunas temporais
+- Criação de colunas analíticas
+- Tratamento de inconsistências
+- Criação de métricas financeiras
+- Criação de colunas de sazonalidade
+
+---
+
+# Métricas Criadas
+
+## Receita Bruta
 
 ```text
-Notebook
-↓
-Criação e validação de queries
-↓
-Transformação em Views SQL
-↓
-Consumo no Tableau
+gross_revenue = quantity * unit_price
 ```
 
 ---
 
-# Tecnologias Utilizadas
+## Receita Líquida
 
-- Python
-- pandas
-- DuckDB
-- SQL
-- Jupyter Notebook
-- Tableau
+```text
+net_revenue = gross_revenue * (1 - discount_pct)
+```
 
 ---
 
-# Benefícios da Utilização de Views
+## Custo da Mercadoria Vendida
 
-A utilização de Views SQL permite:
+```text
+cost_of_goods_sold
+```
 
-- Centralizar regras analíticas
-- Evitar lógica duplicada no dashboard
-- Melhorar manutenção do projeto
-- Facilitar reutilização de métricas
-- Separar visualização da lógica de negócio
+Criado a partir de regras simuladas por subcategoria.
+
+---
+
+## Lucro Bruto
+
+```text
+gross_profit = net_revenue - cost_of_goods_sold
+```
+
+---
+
+## Lucro Operacional
+
+```text
+operational_profit = gross_profit - monthly_burn
+```
+
+---
+
+# Colunas Temporais
+
+A camada de transformação também cria automaticamente:
+
+- mês
+- nome do mês
+- ano
+- trimestre
+
+para colunas temporais do dataset.
+
+---
+
+# 3. Load Layer
+
+Responsável por persistir os dados transformados.
+
+## Destinos
+
+### CSV Processado
+
+```text
+data/processed/
+```
+
+---
+
+### DuckDB Warehouse
+
+```text
+data/warehouse/electronics_sales.duckdb
+```
+
+---
+
+# DuckDB
+
+O DuckDB foi utilizado como Data Warehouse analítico local devido a:
+
+- alta performance analítica
+- integração com pandas
+- suporte SQL
+- facilidade de uso local
+- integração com notebooks
+- compatibilidade com ferramentas analíticas
+
+---
+
+# Camada Analítica
+
+Após o ETL, foram criadas análises SQL utilizando Views.
+
+---
+
+# Views Analíticas
+
+## `top_categories`
+
+Responsável por analisar categorias com melhor desempenho financeiro.
+
+### Métricas
+
+- receita total
+- lucro bruto total
+
+---
+
+## `revenue_seasonality`
+
+Responsável pela análise temporal e sazonalidade.
+
+### Métricas
+
+- receita por período
+- análise mensal
+- tendências temporais
+
+---
+
+# Fluxo Analítico
+
+```text
+DuckDB
+↓
+SQL Views
+↓
+Notebook Exploration
+↓
+Tableau Visualization
+```
+
+---
+
+# Notebook Analítico
+
+O notebook foi utilizado para:
+
+- exploração analítica
+- validação de queries
+- testes de métricas
+- análises temporais
+- desenvolvimento da camada analítica
+
+---
+
+# Conceitos Aplicados
+
+Durante o desenvolvimento foram aplicados conceitos de:
+
+- ETL
+- Engenharia de Dados
+- Analytics Engineering
+- SQL Analítico
+- Data Warehouse
+- Views SQL
+- Modelagem Analítica
+- KPIs financeiros
+- Sazonalidade
+- Métricas de negócio
+- Integração pandas + SQL
+- Persistência analítica
+
+---
+
+# Principais Aprendizados
+
+O projeto permitiu aprofundar conhecimentos em:
+
+- organização de pipelines ETL
+- separação de responsabilidades
+- integração entre Python e SQL
+- construção de métricas financeiras
+- modelagem de dados analíticos
+- criação de camadas semânticas
+- fluxo moderno de analytics
 
 ---
 
 # Próximos Passos
 
-Possíveis evoluções futuras:
+Evoluções planejadas para o projeto:
 
-- Views de recorrência de clientes
-- KPIs financeiros mensais
-- Análise de margem por categoria
-- Ticket médio por período
-- Dashboards interativos no Tableau
-- Camada semântica mais robusta
-- Queries SQL organizadas em diretório próprio
-- Automação das views no pipeline ETL
+- criação de dashboards no Tableau
+- mais views analíticas
+- análise de recorrência de clientes
+- KPIs financeiros adicionais
+- análise de margem por categoria
+- automação de queries
+- organização de diretório SQL
+- logging estruturado
+- testes automatizados
+- integração com PostgreSQL
+- orquestração futura do pipeline
 
 ---
 
-# Conceitos Trabalhados
+# Como Executar
 
-Durante essa etapa foram aplicados conceitos de:
+## Instalar dependências
 
+```bash
+pip install pandas duckdb jupyter
+```
+
+---
+
+## Executar pipeline
+
+```bash
+python main.py
+```
+
+---
+
+## Abrir notebook
+
+```bash
+jupyter notebook
+```
+
+---
+
+# Objetivo Educacional
+
+Este projeto foi desenvolvido com foco em aprendizado prático de:
+
+- engenharia de dados
+- pipelines ETL
 - SQL analítico
-- Data Warehouse
-- Views SQL
-- Métricas financeiras
-- Sazonalidade
-- Analytics Engineering
-- Modelagem analítica
-- Camada semântica de dados
-````
+- analytics engineering
+- visualização de dados
+- workflows modernos de dados
